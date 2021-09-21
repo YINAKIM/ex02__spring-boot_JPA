@@ -105,6 +105,35 @@ public class MemoRepositoryTests {
         */
     }
 
+    @Test
+    public void testDelete(){
+        Long mno = 100L;
+        memoRepository.deleteById(mno);
+        /*
+        Hibernate:
+            select
+                memo0_.mno as mno1_0_0_,
+                memo0_.memo_text as memo_tex2_0_0_
+            from
+                tbl_memo memo0_
+            where
+                memo0_.mno=?
+        Hibernate:
+            delete
+            from
+                tbl_memo
+            where
+                mno=?
+          ================================
+          deleteById()는
+          이렇게 select해서 결과 있으면 delete하는데
+          만약 해당데이터가 존재하지 않으면? --> EmptyResultDataAccessException을 반환.
+
+          No class org.zerock.ex02.entity.Memo entity with id 100 exists!
+          org.springframework.dao.EmptyResultDataAccessException at MemoRepositoryTests.java:111
+        */
+    }
+
 
 
 
