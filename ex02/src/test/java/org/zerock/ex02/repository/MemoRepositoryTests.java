@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.zerock.ex02.entity.Memo;
 
+import javax.transaction.Transactional;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @SpringBootTest
@@ -26,45 +28,82 @@ public class MemoRepositoryTests {
             Memo memo = Memo.builder().memoText("sample..."+i).build();  // Memo에서 memoText는 notnull이므로 반드시 값을 넣어준다.
             memoRepository.save(memo);
         });
+    }
 
+    @Test
+    public void testSelect1(){ // use findById() : 있는지 확인 후 객체 바로 읽어옴
+        Long mno = 100L;
+
+        Optional<Memo> result = memoRepository.findById(mno);
+
+        System.out.println("==========================================");
+
+        if(result.isPresent()){
+            Memo memo = result.get();
+            System.out.println(memo);
+        }
         /*
-            JPA의 구현체인 Hibernate가 발생시키는 Insert구문을 돌린다. 로그에서 확인해보면
-            Hibernate:
-                insert
-                into
-                    tbl_memo
-                    (memo_text)
-                values
-                    (?)
-            Hibernate:
-                insert
-                into
-                    tbl_memo
-                    (memo_text)
-                values
-                    (?)
-           Hibernate:
-                insert
-                into
-                    tbl_memo
-                    (memo_text)
-                values
-                    (?)
-            .
-            .
-            .
-            .
-            이렇게 100번 돌린다.
-            -----------------------
-            DB조회해보면
-            mno = 1, memoText = "sample...1"
-            .
-            .
-            .
-            mno = 100, memoText = "sample...100"  까지 들어가있음
-
+        Hibernate:
+            select
+                memo0_.mno as mno1_0_0_,
+                memo0_.memo_text as memo_tex2_0_0_
+            from
+                tbl_memo memo0_
+            where
+                memo0_.mno=?
+        ==========================================
+        Memo(mno=100, memoText=sample...100)
         */
     }
+
+
+    @Transactional
+    @Test
+    public void testSelect2(){ // use getById() (getOne() is deprecated from JPA 2.5.4)
+        Long mno = 100L;
+
+        Memo memo = memoRepository.getById(mno); //일단 참조값을 반환,
+
+        System.out.println("==========================================");
+        System.out.println(memo);// id 이외의 값에 대한 요청이 들어오면 그때 객체를 반환한다.
+        /*
+        ==========================================
+        Hibernate:
+            select
+                memo0_.mno as mno1_0_0_,
+                memo0_.memo_text as memo_tex2_0_0_
+            from
+                tbl_memo memo0_
+            where
+                memo0_.mno=?
+        Memo(mno=100, memoText=sample...100)
+        */
+    }
+
+
+//    @Transactional
+//    @Test
+//    public void testSelect2(){ // use getOne()
+//        Long mno = 100L;
+//
+//        Memo memo = memoRepository.getOne(mno); // deprecated API 라고 Junit이 알아서 Recompile해서 테스트실행시킴 : 신기하쥬? ㅋㅋ
+//                                                // Note: Recompile with -Xlint:deprecation for details.
+//
+//        System.out.println("==========================================");
+//        System.out.println(memo);
+//        /*
+//        ==========================================
+//        Hibernate:
+//            select
+//                memo0_.mno as mno1_0_0_,
+//                memo0_.memo_text as memo_tex2_0_0_
+//            from
+//                tbl_memo memo0_
+//            where
+//                memo0_.mno=?
+//        Memo(mno=100, memoText=sample...100)
+//        */
+//    }
 
 
 
