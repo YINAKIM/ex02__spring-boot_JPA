@@ -42,18 +42,6 @@ public class MemoRepositoryTests {
             Memo memo = result.get();
             System.out.println(memo);
         }
-        /*
-        Hibernate:
-            select
-                memo0_.mno as mno1_0_0_,
-                memo0_.memo_text as memo_tex2_0_0_
-            from
-                tbl_memo memo0_
-            where
-                memo0_.mno=?
-        ==========================================
-        Memo(mno=100, memoText=sample...100)
-        */
     }
 
 
@@ -66,8 +54,18 @@ public class MemoRepositoryTests {
 
         System.out.println("==========================================");
         System.out.println(memo);// id 이외의 값에 대한 요청이 들어오면 그때 객체를 반환한다.
+    }
+
+    @Test
+    public void testUpdate(){
+        Memo memo = Memo.builder().mno(101L).memoText("update Test by save()").build();
+        System.out.println(memoRepository.save(memo));
         /*
-        ==========================================
+        JpaRepository.save(엔티티객체)는 내부적으로 해당엔티티의 존재여부(@Id값의 일치여부) 먼저 확인 후,
+        존재하면(일치하면) --> UPDATE 실행
+        존재하지 않으면 (@Id와 일치하지 않으면) ---> INSERT실행
+
+        [ UPDATE 실행된 log : 100L로 save() 실행]
         Hibernate:
             select
                 memo0_.mno as mno1_0_0_,
@@ -76,35 +74,36 @@ public class MemoRepositoryTests {
                 tbl_memo memo0_
             where
                 memo0_.mno=?
-        Memo(mno=100, memoText=sample...100)
+        Hibernate:
+            update
+                tbl_memo
+            set
+                memo_text=?
+            where
+                mno=?
+        Memo(mno=100, memoText=update Test by save())
+
+
+
+        [ INSERT 실행된 log : 101L로 save() 실행]
+        Hibernate:
+            select
+                memo0_.mno as mno1_0_0_,
+                memo0_.memo_text as memo_tex2_0_0_
+            from
+                tbl_memo memo0_
+            where
+                memo0_.mno=?
+        Hibernate:
+            insert
+            into
+                tbl_memo
+                (memo_text)
+            values
+                (?)
+        Memo(mno=101, memoText=update Test by save())  ---> 101번 Id값이 없기때문에 insert쿼리가 실행됨
         */
     }
-
-
-//    @Transactional
-//    @Test
-//    public void testSelect2(){ // use getOne()
-//        Long mno = 100L;
-//
-//        Memo memo = memoRepository.getOne(mno); // deprecated API 라고 Junit이 알아서 Recompile해서 테스트실행시킴 : 신기하쥬? ㅋㅋ
-//                                                // Note: Recompile with -Xlint:deprecation for details.
-//
-//        System.out.println("==========================================");
-//        System.out.println(memo);
-//        /*
-//        ==========================================
-//        Hibernate:
-//            select
-//                memo0_.mno as mno1_0_0_,
-//                memo0_.memo_text as memo_tex2_0_0_
-//            from
-//                tbl_memo memo0_
-//            where
-//                memo0_.mno=?
-//        Memo(mno=100, memoText=sample...100)
-//        */
-//    }
-
 
 
 
