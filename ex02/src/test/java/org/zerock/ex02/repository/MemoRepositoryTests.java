@@ -3,8 +3,12 @@ package org.zerock.ex02.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.zerock.ex02.entity.Memo;
 
+import javax.print.attribute.standard.PageRanges;
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -107,7 +111,7 @@ public class MemoRepositoryTests {
 
     @Test
     public void testDelete(){
-        Long mno = 100L;
+        Long mno = 101L;
         memoRepository.deleteById(mno);
         /*
         Hibernate:
@@ -134,7 +138,56 @@ public class MemoRepositoryTests {
         */
     }
 
+    // JPA 페이징처리
+    @Test
+    public void testPageable(){
 
+        Pageable pageable = PageRequest.of(0,10); //1페이지 10개
 
+        Page<Memo> result = memoRepository.findAll(pageable);
 
+        System.out.println(result);
+        // Page 1 of 10 containing org.zerock.ex02.entity.Memo instances
+    /*
+    Hibernate:
+        select
+            memo0_.mno as mno1_0_,
+            memo0_.memo_text as memo_tex2_0_
+        from
+            tbl_memo memo0_ limit ?
+    Hibernate:
+        select
+            count(memo0_.mno) as col_0_0_
+        from
+            tbl_memo memo0_
+    */
+    }
+
+    // Page<Entity타입>으로 이용하는 페이징처리 관련 주요 메서드
+    @Test
+    public void testPageable2(){
+
+        Pageable pageable = PageRequest.of(0,10); //1페이지 10개
+
+        Page<Memo> result = memoRepository.findAll(pageable);
+        System.out.println(result);
+
+        System.out.println("---------------- 여기부터 paging 메서드 -------------------");
+        System.out.println("총 몇페이지 ? getTotalPages()..............."+ result.getTotalPages());
+        System.out.println("전체 데이터 몇건? getTotalElements()........."+ result.getTotalElements());
+        System.out.println("현재 페이지번호는? (0부터 시작) getNumber()....."+ result.getNumber());
+        System.out.println("한페이지에 몇건씩? getSize().................."+ result.getSize());
+        System.out.println("다음페이지 존재하나? hasNext()................."+ result.hasNext());
+        System.out.println("시작페이지 여부? isFirst()...................."+ result.isFirst());
+        /*
+            Page 1 of 10 containing org.zerock.ex02.entity.Memo instances
+            ---------------- 여기부터 paging 메서드 -------------------
+            총 몇페이지 ? getTotalPages()...............10
+            전체 데이터 몇건? getTotalElements().........99
+            현재 페이지번호는? (0부터 시작) getNumber().....0
+            한페이지에 몇건씩? getSize()..................10
+            다음페이지 존재하나? hasNext().................true
+            시작페이지 여부? isFirst()....................true
+        */
+    }
 }
