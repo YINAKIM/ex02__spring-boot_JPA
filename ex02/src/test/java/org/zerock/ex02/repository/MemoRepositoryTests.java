@@ -6,9 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.zerock.ex02.entity.Memo;
 
-import javax.print.attribute.standard.PageRanges;
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -189,5 +189,67 @@ public class MemoRepositoryTests {
             다음페이지 존재하나? hasNext().................true
             시작페이지 여부? isFirst()....................true
         */
+    }
+
+    @Test
+    public void testSort(){
+        Sort sort1 = Sort.by("mno").descending(); //Sort타입으로 필드, 조건 지정하여 정렬조건 정의
+
+        Pageable pageable = PageRequest.of(0,10,sort1); // Sort타입 파라미터를 PageRequest에 정렬조건으로 보냄
+        Page<Memo> result = memoRepository.findAll(pageable);
+
+        result.get().forEach(memo -> {
+            System.out.println(memo);
+        });
+            /*
+            Hibernate:
+                select
+                    memo0_.mno as mno1_0_,
+                    memo0_.memo_text as memo_tex2_0_
+                from
+                    tbl_memo memo0_
+                order by
+                    memo0_.mno desc limit ?  // --> order by절 추가됨
+            Hibernate:
+                select
+                    count(memo0_.mno) as col_0_0_
+                from
+                    tbl_memo memo0_
+            Memo(mno=99, memoText=sample...99)
+            Memo(mno=98, memoText=sample...98)
+            Memo(mno=97, memoText=sample...97)
+            Memo(mno=96, memoText=sample...96)
+            Memo(mno=95, memoText=sample...95)
+            Memo(mno=94, memoText=sample...94)
+            Memo(mno=93, memoText=sample...93)
+            Memo(mno=92, memoText=sample...92)
+            Memo(mno=91, memoText=sample...91)
+            Memo(mno=90, memoText=sample...90) // desc정렬됨
+            */
+    }
+
+    @Test
+    public void testSortAnd(){
+        Sort sort1 = Sort.by("mno").descending();
+        Sort sort2 = Sort.by("memoText").ascending();
+        Sort sortAll = sort1.and(sort2); // and()를 이용해서 정렬조건 연결
+
+        Pageable pageable = PageRequest.of(0,10,sortAll); // and로 결합시킨 정렬조건을 적용
+        Page<Memo> result = memoRepository.findAll(pageable);
+
+        result.get().forEach(memo -> {
+            System.out.println(memo);
+        });
+            /*
+                Hibernate:
+                    select
+                        memo0_.mno as mno1_0_,
+                        memo0_.memo_text as memo_tex2_0_
+                    from
+                        tbl_memo memo0_
+                    order by
+                        memo0_.mno desc,                    //--------------> mno desc (sort1조건)
+                        memo0_.memo_text asc limit ?        //--------------> memoText asc (sort2조건)
+            */
     }
 }
