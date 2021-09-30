@@ -29,4 +29,21 @@ public interface MemoRepository extends JpaRepository<Memo,Long> {
     @Modifying
     @Query(value = "update Memo m set m.memoText = :memoText where m.mno = :mno")
     int updateMemoText(@Param("mno") Long mno, @Param("memoText") String memoText);
+
+
+    //@Query이용시 페이징처리 : countQuery속성 이용, Pageable파라미터 & Page<Entity>로 리턴
+    @Query(value = "select m from Memo m where m.mno > :mno"
+            ,countQuery = "select count(m) from Memo m where m.mno > :mno")
+    Page<Memo> getListWithQuery(Long mno, Pageable pageableInfo);
+
+
+    //필요한 데이터만을 Object[]의 형태로
+    @Query(value = "select m.mno, m.memoText, CURRENT_DATE from Memo m where m.mno > :mno"
+    ,countQuery = "select count(m) from Memo m where m.mno > :m.mno")
+    Page<Object[]> getListWithQueryObject(Long mno, Pageable pageableInfo);
+
+
+    // nativeQuery = true : 복잡한JOIN구문 등을 사용해야할 때 사용
+    @Query(value = "select * from memo where mno > 0 " ,nativeQuery = true)
+    List<Object[]> getNativeResult();
 }
